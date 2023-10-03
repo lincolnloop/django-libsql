@@ -1,5 +1,7 @@
 # django-libsql
 
+## ⚠️ This library is not yet usable. The Python libsql library is not complete yet. ⚠️
+
 [![PyPI - Version](https://img.shields.io/pypi/v/django-libsql.svg)](https://pypi.org/project/django-libsql)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/django-libsql.svg)](https://pypi.org/project/django-libsql)
 
