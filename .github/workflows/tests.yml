@@ -20,7 +20,7 @@ jobs:
           # Databases are handled by host header
           echo -e "127.0.0.1 testdb.local\n127.0.0.1 testotherdb.local\n127.0.0.1 db.local\n127.0.0.1 otherdb.local" | sudo tee -a /etc/hosts
           # Start the server
-          docker run --rm -p 8080:8080 --name sqld ghcr.io/libsql/sqld:latest
+          docker run --rm --detach -p 8080:8080 --name sqld ghcr.io/libsql/sqld:latest
       - name: Install system packages for Django's Python test dependencies
         run: |
           sudo apt-get update
