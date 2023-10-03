@@ -1,3 +1,7 @@
+---
+# Borrowed heavily from django-snowflake
+# https://github.com/Snowflake-Labs/django-snowflake/blob/25c603482b39109509eb2a549672cd9404e5dc6c/.github/workflows/tests.yml
+
 name: Tests
 
 on: [push]
