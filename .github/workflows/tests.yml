@@ -1,0 +1,73 @@
+name: Tests
+
+on: [push]
+
+jobs:
+  django-tests:
+    runs-on: ubuntu-latest
+    name: Django Test Suite
+    steps:
+      - name: Checkout django-libsql
+        uses: actions/checkout@v3
+      - name: Checkout Django
+        uses: actions/checkout@v3
+        with:
+          repository: 'django/django'
+          ref: '4.2'
+          path: 'django_repo'
+      - name: Generate sqld keys
+        run: |
+          cd /tmp
+          python -m venv --prompt . --upgrade-deps .venv
+          . .venv/bin/activate
+          pip install cryptography pyjwt
+          curl -sLO https://raw.githubusercontent.com/libsql/sqld/40cb9be2b5e681824a2eae1278c78e1414e5478d/scripts/gen_jwt.py
+          python gen_jwt.py | grep "Full access" | awk '{print $3}' > /tmp/sqld_auth_token
+      - name: Setup sqld server
+        run: |
+          # Databases are handled by host header
+          echo -e "127.0.0.1 testdb.local\n127.0.0.1 testotherdb.local\n127.0.0.1 db.local\n127.0.0.1 otherdb.local" | sudo tee -a /etc/hosts
+          # Start the server
+          docker run --rm -p 8080:8080 -v /tmp/jwt_key.pem:/jwt_key.pem --name sqld ghcr.io/libsql/sqld:latest -auth-jwt-key-file /jwt_key.pem
+      - name: Install system packages for Django's Python test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libmemcached-dev
+      - name: Install Django and its Python test dependencies
+        run: |
+          pip3 install -U pip
+          cd django_repo/tests/
+          pip3 install -e ..
+          pip3 install -r requirements/py3.txt
+      - name: install the django-libsql backend
+        run: pip3 install .
+      - name: Copy the test settings file
+        run: cp .github/workflows/libsql_settings.py django_repo/tests/
+      - name: Run the tests
+        run: |
+          export LIBSQL_AUTH_TOKEN=$(cat /tmp/sqld_auth_token)
+          export LIBSQL_SYNC_URL=http://db.local:8080
+          export OTHER_LIBSQL_SYNC_URL=http://otherdb.local:8080
+          python3 django_repo/tests/runtests.py --settings libsql_settings -v 2
+          aggregation
+          aggregation_regress
+          annotations
+          backends
+          basic
+          bulk_create
+          dates
+          datetimes
+          db_functions
+          expressions
+          expressions_window
+          inspectdb
+          introspection
+          lookup
+          migrations
+          model_fields
+          queries
+          schema
+          timezones
+      - name: Stop sqld server
+        if: always()
+        run: docker ps | grep sqld && docker kill sqld
