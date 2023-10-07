@@ -32,5 +32,35 @@ class DatabaseWrapper(SQLite3DatabaseWrapper):
         conn.execute("PRAGMA foreign_keys = ON")
         # The macOS bundled SQLite defaults legacy_alter_table ON, which
         # prevents atomic table renames.
-        conn.execute("PRAGMA legacy_alter_table = OFF")
+        # conn.execute("PRAGMA legacy_alter_table = OFF")
         return conn
+
+    def _set_autocommit(self, autocommit):
+        """
+          File "/Users/pete/projects/lincolnloop/django-libsql/django/django/db/backends/sqlite3/base.py", line 219, in _set_autocommit
+            self.connection.isolation_level = level
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AttributeError: 'builtins.Connection' object has no attribute 'isolation_level'
+        https://github.com/libsql/libsql-experimental-python/issues/1
+        """
+        pass
+
+    def create_cursor(self, name=None):
+        """
+          File "/Users/pete/projects/lincolnloop/django-libsql/django/django/db/backends/sqlite3/base.py", line 190, in create_cursor
+            return self.connection.cursor(factory=SQLiteCursorWrapper)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        TypeError: Connection.cursor() takes no keyword arguments
+        """
+        return self.connection.cursor()
+
+    def disable_constraint_checking(self):
+        """
+          File "/Users/pete/projects/lincolnloop/django-libsql/django/django/db/backends/sqlite3/base.py", line 227, in disable_constraint_checking
+            enabled = cursor.execute("PRAGMA foreign_keys").fetchone()[0]
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        ValueError: invalid column type
+        """
+        with self.cursor() as cursor:
+            cursor.execute("PRAGMA foreign_keys = OFF")
+        return True
