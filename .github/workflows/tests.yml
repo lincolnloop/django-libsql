@@ -24,7 +24,7 @@ jobs:
           # Databases are handled by host header
           echo -e "127.0.0.1 testdb.local\n127.0.0.1 testotherdb.local\n127.0.0.1 db.local\n127.0.0.1 otherdb.local" | sudo tee -a /etc/hosts
           # Start the server
-          docker run --rm --detach -p 8080:8080 --name sqld ghcr.io/libsql/sqld:latest
+          docker run --rm --detach -p 8080:8080 --name sqld -e RUST_LOG=sqld=debug,info ghcr.io/tursodatabase/libsql-server:main
       - name: Install system packages for Django's Python test dependencies
         run: |
           sudo apt-get update
@@ -67,6 +67,8 @@ jobs:
           queries
           schema
           timezones
-      - name: Stop sqld server
+      - name: Dump sqld logs and stop
         if: always()
-        run: docker ps | grep sqld && docker kill sqld
+        run: |
+          docker logs sqld
+          docker ps | grep sqld && docker kill sqld
