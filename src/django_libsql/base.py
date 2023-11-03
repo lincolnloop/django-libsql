@@ -26,7 +26,7 @@ class DatabaseWrapper(SQLite3DatabaseWrapper):
     def get_new_connection(self, conn_params):
         """Connect to the database"""
         conn = libsql_client.connect(**self.connection_params())
-        # TODO: AttributeError: 'builtins.Connection' object has no attribute 'create_function'
+        # TODO: https://github.com/libsql/libsql-experimental-python/issues/7
         # register_functions(conn)
 
         conn.execute("PRAGMA foreign_keys = ON")
@@ -60,6 +60,7 @@ class DatabaseWrapper(SQLite3DatabaseWrapper):
             enabled = cursor.execute("PRAGMA foreign_keys").fetchone()[0]
                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         ValueError: invalid column type
+        https://github.com/libsql/sqld/issues/287
         """
         with self.cursor() as cursor:
             cursor.execute("PRAGMA foreign_keys = OFF")
