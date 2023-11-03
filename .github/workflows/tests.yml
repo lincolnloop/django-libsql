@@ -36,7 +36,10 @@ jobs:
           pip3 install -e ..
           pip3 install -r requirements/py3.txt
       - name: install the django-libsql backend
-        run: pip3 install .
+        run: |
+          pip3 install .
+          # workaround https://github.com/libsql/libsql-experimental-python/issues/8
+          pip3 install -U https://github.com/libsql/libsql-experimental-python/archive/refs/tags/v0.0.18.zip
       - name: Copy the test settings file
         run: cp .github/workflows/libsql_settings.py django_repo/tests/
       - name: Run the tests
