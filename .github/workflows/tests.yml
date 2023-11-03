@@ -48,25 +48,6 @@ jobs:
           export LIBSQL_SYNC_URL=http://db.local:8080
           export OTHER_LIBSQL_SYNC_URL=http://otherdb.local:8080
           python3 django_repo/tests/runtests.py --settings libsql_settings -v 2
-          aggregation
-          aggregation_regress
-          annotations
-          backends
-          basic
-          bulk_create
-          dates
-          datetimes
-          db_functions
-          expressions
-          expressions_window
-          inspectdb
-          introspection
-          lookup
-          migrations
-          model_fields
-          queries
-          schema
-          timezones
       - name: Dump sqld logs and stop
         if: always()
         run: |
