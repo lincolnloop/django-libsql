@@ -6,12 +6,15 @@ from django.db.backends.sqlite3._functions import register as register_functions
 from django.db.backends.sqlite3.base import DatabaseWrapper as SQLite3DatabaseWrapper
 from django.utils.asyncio import async_unsafe
 
+from .creation import DatabaseCreation
+
 log = logging.getLogger(__name__)
 
 
 class DatabaseWrapper(SQLite3DatabaseWrapper):
     vendor = "libsql"
     display_name = "libSQL"
+    creation_class = DatabaseCreation
 
     def connection_params(self) -> dict:
         """Return a dict of connection parameters"""

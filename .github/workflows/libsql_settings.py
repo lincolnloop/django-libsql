@@ -7,11 +7,12 @@ DATABASES = {
         "NAME": "/tmp/default.db",
         "SYNC_URL": os.environ["LIBSQL_SYNC_URL"],
         "AUTH_TOKEN": os.environ["LIBSQL_AUTH_TOKEN"],
+        "ADMIN_URL": "http://localhost:9090",
         "TEST": {
             # libsql does not like django's default in-memory database name
             # file:memorydb_default?mode=memory&cache=shared
             "NAME": "/tmp/testdefault.db",
-            "SYNC_URL": "test" + os.environ["LIBSQL_SYNC_URL"]
+            "SYNC_URL": os.environ["LIBSQL_SYNC_URL"].replace("http://", "http://test-")
         },
     },
     "other": {
@@ -19,11 +20,12 @@ DATABASES = {
         "NAME": "/tmp/other.db",
         "SYNC_URL": os.environ["OTHER_LIBSQL_SYNC_URL"],
         "AUTH_TOKEN": os.environ["LIBSQL_AUTH_TOKEN"],
+        "ADMIN_URL": "http://localhost:9090",
         "TEST": {
             # libsql does not like django's default in-memory database name
             # file:memorydb_default?mode=memory&cache=shared
             "NAME": "/tmp/testother.db",
-            "SYNC_URL": "test" + os.environ["OTHER_LIBSQL_SYNC_URL"]
+            "SYNC_URL": os.environ["OTHER_LIBSQL_SYNC_URL"].replace("http://", "http://test-")
         },
     },
 }
