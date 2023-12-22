@@ -23,6 +23,13 @@ jobs:
         run: |
           # Databases are handled by host header
           echo -e "127.0.0.1 testdb.local\n127.0.0.1 testotherdb.local\n127.0.0.1 db.local\n127.0.0.1 otherdb.local" | sudo tee -a /etc/hosts
+          # Verify hosts file
+          cat /etc/hosts
+          set -x
+          nslookup testdb.local
+          nslookup testotherdb.local
+          nslookup db.local
+          nslookup otherdb.local
           # Start the server
           docker run --rm --detach -p 8080:8080 -p 9090:9090 --name sqld -e RUST_LOG=sqld=debug,info ghcr.io/tursodatabase/libsql-server:main /bin/sqld --admin-listen-addr 0.0.0.0:9090 --enable-namespaces
       - name: Install system packages for Django's Python test dependencies
