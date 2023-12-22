@@ -32,6 +32,9 @@ jobs:
           nslookup otherdb.local
           # Start the server
           docker run --rm --detach -p 8080:8080 -p 9090:9090 --name sqld -e RUST_LOG=sqld=debug,info ghcr.io/tursodatabase/libsql-server:main /bin/sqld --admin-listen-addr 0.0.0.0:9090 --enable-namespaces
+          sleep 5
+          curl -sv testdb.local:8080
+          curl -sv testotherdb.local:8080
       - name: Install system packages for Django's Python test dependencies
         run: |
           sudo apt-get update
