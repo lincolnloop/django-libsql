@@ -54,7 +54,6 @@ jobs:
           export LIBSQL_AUTH_TOKEN=""
           export LIBSQL_SYNC_URL=http://db.local:8080
           export OTHER_LIBSQL_SYNC_URL=http://otherdb.local:8080
-          export RUST_LOG=debug
           python3 django_repo/tests/runtests.py --settings libsql_settings -v 2
       - name: Dump sqld logs and stop
         if: always()
