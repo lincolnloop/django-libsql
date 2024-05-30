@@ -31,7 +31,7 @@ jobs:
           nslookup db.local
           nslookup otherdb.local
           # Start the server
-          docker run --rm --detach -p 8080:8080 -p 9090:9090 --name sqld -e RUST_LOG=sqld=debug,info ghcr.io/tursodatabase/libsql-server:main /bin/sqld --admin-listen-addr 0.0.0.0:9090 --enable-namespaces
+          docker run --rm --detach -p 8080:8080 -p 9090:9090 --name sqld -e RUST_LOG=sqld=debug,info ghcr.io/tursodatabase/libsql-server:latest /bin/sqld --admin-listen-addr 0.0.0.0:9090 --enable-namespaces
           sleep 5
           curl -sv test-db.local:8080
           curl -sv test-otherdb.local:8080
