@@ -4,7 +4,9 @@
 
 name: Tests
 
-on: [push]
+on:
+  push: {}
+  workflow_dispatch: {}
 
 jobs:
   django-tests:
@@ -12,12 +14,12 @@ jobs:
     name: Django Test Suite
     steps:
       - name: Checkout django-libsql
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Checkout Django
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'django/django'
-          ref: '4.2'
+          ref: '5.1'
           path: 'django_repo'
       - name: Setup sqld server
         run: |
