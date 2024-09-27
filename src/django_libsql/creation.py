@@ -5,6 +5,7 @@ import shutil
 import sqlite3
 import sys
 from functools import cached_property
+from http import HTTPStatus
 from urllib.parse import urlparse
 
 from django.db import NotSupportedError
@@ -54,7 +55,7 @@ class DatabaseCreation(SQLite3DatabaseCreation):
         if self.libsql_database_exists(database_name):
             return
         response = self._libsql_admin_request("POST", f"/v1/namespaces/{database_name}/create", body="{}")
-        if response.status != 200:
+        if response.status != HTTPStatus.OK:
             raise Exception(f"Failed to create database: {response.status} {response.reason}")
 
     def destroy_libsql_database(self, host: str) -> None:
@@ -64,14 +65,14 @@ class DatabaseCreation(SQLite3DatabaseCreation):
         if not self.libsql_database_exists(database_name):
             return
         response = self._libsql_admin_request("DELETE", f"/v1/namespaces/{database_name}")
-        if response.status != 200:
+        if response.status != HTTPStatus.OK:
             raise Exception(f"Failed to destroy database: {response.status} {response.reason}")
 
     def libsql_database_exists(self, database_name: str) -> bool:
         response = self._libsql_admin_request("GET", f"/v1/namespaces/{database_name}/stats")
-        if response.status == 400:
+        if response.status == HTTPStatus.NOT_FOUND:
             return False
-        if response.status == 200:
+        if response.status == HTTPStatus.OK:
             return True
         raise Exception(f"Failed to check if database exists: {response.status} {response.reason}")
 
