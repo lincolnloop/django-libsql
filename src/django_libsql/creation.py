@@ -227,28 +227,27 @@ class DatabaseCreation(SQLite3DatabaseCreation):
         """
         Internal implementation - duplicate the test db tables.
         """
+        import os
+        import shutil
+
         try:
             # Get the source database name from settings
             source_database = self.connection.settings_dict["NAME"]
             clone_database = f"{source_database}_{suffix}"
 
-            # Use the existing database connection to clone
-            conn = self.connection.get_new_connection(self.connection.connection_params())
+            # If `keepdb` is False, ensure the cloned database doesn't already exist
+            if not keepdb and os.path.exists(clone_database):
+                os.remove(clone_database)
 
-            # Attach the clone database
-            conn.execute(f"ATTACH DATABASE '{clone_database}' AS clone_db")
+            # Copy the source database file to create the clone
+            shutil.copy2(source_database, clone_database)
 
-            # Copy all tables to the clone database
-            tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
-            for table in tables:
-                table_name = table[0]
-                conn.execute(f"CREATE TABLE clone_db.{table_name} AS SELECT * FROM main.{table_name}")
-
-            # Detach the clone database
-            conn.execute("DETACH DATABASE clone_db")
+            # Update the connection to point to the cloned database
+            self.connection.settings_dict["NAME"] = clone_database
 
             if verbosity >= 1:
                 print(f"Cloned test database '{source_database}' to '{clone_database}'")
+
         except Exception as e:
             raise NotImplementedError(
                 "Cloning databases is not supported for this backend."
