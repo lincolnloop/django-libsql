@@ -61,7 +61,6 @@ class DatabaseCreation(SQLite3DatabaseCreation):
     def destroy_libsql_database(self, host: str) -> None:
         parsed = urlparse(host)
         database_name = parsed.hostname.split(".")[0]
-        breakpoint()
         if not self.libsql_database_exists(database_name):
             return
         response = self._libsql_admin_request("DELETE", f"/v1/namespaces/{database_name}")
@@ -228,10 +227,32 @@ class DatabaseCreation(SQLite3DatabaseCreation):
         """
         Internal implementation - duplicate the test db tables.
         """
-        raise NotImplementedError(
-            "The database backend doesn't support cloning databases. "
-            "Disable the option to run tests in parallel processes."
-        )
+        try:
+            # Get the source database name from settings
+            source_database = self.connection.settings_dict["NAME"]
+            clone_database = f"{source_database}_{suffix}"
+
+            # Use the existing database connection to clone
+            conn = self.connection.get_new_connection(self.connection.connection_params())
+
+            # Attach the clone database
+            conn.execute(f"ATTACH DATABASE '{clone_database}' AS clone_db")
+
+            # Copy all tables to the clone database
+            tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+            for table in tables:
+                table_name = table[0]
+                conn.execute(f"CREATE TABLE clone_db.{table_name} AS SELECT * FROM main.{table_name}")
+
+            # Detach the clone database
+            conn.execute("DETACH DATABASE clone_db")
+
+            if verbosity >= 1:
+                print(f"Cloned test database '{source_database}' to '{clone_database}'")
+        except Exception as e:
+            raise NotImplementedError(
+                "Cloning databases is not supported for this backend."
+            ) from e
 
     def _destroy_test_db(self, test_database_name, verbosity):
         if test_database_name and not self.is_in_memory_db(test_database_name):
