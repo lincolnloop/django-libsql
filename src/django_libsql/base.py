@@ -70,6 +70,19 @@ class CustomCursorWrapper:
         return getattr(self.cursor, attr)
 
 
+class ConnectionWrapper:
+    def __init__(self, connection):
+        self._connection = connection
+
+    def __getattr__(self, name):
+        """Delegate attribute access to the original connection object."""
+        return getattr(self._connection, name)
+
+    def close(self):
+        """Provide a no-op close method."""
+        pass  # No operation required since libsql doesn't need explicit closing.
+
+
 class DatabaseWrapper(SQLite3DatabaseWrapper):
     vendor = "libsql"
     display_name = "libSQL"
@@ -95,7 +108,7 @@ class DatabaseWrapper(SQLite3DatabaseWrapper):
         # The macOS bundled SQLite defaults legacy_alter_table ON, which
         # prevents atomic table renames.
         # conn.execute("PRAGMA legacy_alter_table = OFF")
-        return conn
+        return ConnectionWrapper(conn)
 
     def _set_autocommit(self, autocommit):
         """
@@ -153,22 +166,3 @@ class DatabaseWrapper(SQLite3DatabaseWrapper):
         with self.cursor() as cursor:
             cursor.execute("PRAGMA foreign_keys = OFF")
         return True
-
-    def get_new_connection(self, conn_params):
-        """Connect to the database."""
-        conn = libsql_client.connect(**self.connection_params())
-        # Add a dummy close method to the connection
-        conn.close = lambda: None  # No-op since libsql connections don't require explicit closing
-        return conn
-
-    def _close(self):
-        """Override the close method to handle missing close on connection."""
-        try:
-            # Attempt to close the connection if it exists
-            if self.connection:
-                self.connection.close()
-        except AttributeError:
-            # Ignore since `close` isn't required
-            pass
-        finally:
-            self.connection = None
