@@ -12,6 +12,7 @@ jobs:
   django-tests:
     runs-on: ubuntu-latest
     name: Django Test Suite
+    timeout-minutes: 15
     steps:
       - name: Checkout django-libsql
         uses: actions/checkout@v4
