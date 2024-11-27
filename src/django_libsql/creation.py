@@ -2,15 +2,16 @@ import http.client
 import multiprocessing
 import os
 import shutil
-import sqlite3
 import sys
 from functools import cached_property
 from http import HTTPStatus
 from urllib.parse import urlparse
 
-from django.db import NotSupportedError
-from django.db.backends.sqlite3.creation import DatabaseCreation as SQLite3DatabaseCreation
 from django.conf import settings
+from django.db import NotSupportedError
+from django.db.backends.sqlite3.creation import \
+    DatabaseCreation as SQLite3DatabaseCreation
+
 
 class DatabaseCreation(SQLite3DatabaseCreation):
 
@@ -90,9 +91,7 @@ class DatabaseCreation(SQLite3DatabaseCreation):
         test_database_sync_url = self.connection.settings_dict["TEST"]["SYNC_URL"]
         return test_database_sync_url
 
-    def create_test_db(
-        self, verbosity=1, autoclobber=False, serialize=True, keepdb=False
-    ):
+    def create_test_db(self, verbosity=1, autoclobber=False, serialize=True, keepdb=False):
         """
         Create a test database, prompting the user for confirmation if the
         database already exists. Return the name of the test database created.
@@ -133,9 +132,7 @@ class DatabaseCreation(SQLite3DatabaseCreation):
             if self.connection.settings_dict["TEST"]["MIGRATE"] is False:
                 # Disable migrations for all apps.
                 old_migration_modules = settings.MIGRATION_MODULES
-                settings.MIGRATION_MODULES = {
-                    app.label: None for app in apps.get_app_configs()
-                }
+                settings.MIGRATION_MODULES = {app.label: None for app in apps.get_app_configs()}
             # We report migrate messages at one level lower than that
             # requested. This ensures we don't get flooded with messages during
             # testing (unless you really ask to be flooded).
@@ -219,17 +216,12 @@ class DatabaseCreation(SQLite3DatabaseCreation):
         start_method = multiprocessing.get_start_method()
         if start_method == "fork":
             return orig_settings_dict
-        raise NotSupportedError(
-            f"Cloning with start method {start_method!r} is not supported."
-        )
+        raise NotSupportedError(f"Cloning with start method {start_method!r} is not supported.")
 
     def _clone_test_db(self, suffix, verbosity, keepdb=False):
         """
         Internal implementation - duplicate the test db tables.
         """
-        import os
-        import shutil
-
         try:
             # Get the source database name from settings
             source_database = self.connection.settings_dict["NAME"]
@@ -249,9 +241,7 @@ class DatabaseCreation(SQLite3DatabaseCreation):
                 print(f"Cloned test database '{source_database}' to '{clone_database}'")
 
         except Exception as e:
-            raise NotImplementedError(
-                "Cloning databases is not supported for this backend."
-            ) from e
+            raise NotImplementedError("Cloning databases is not supported for this backend.") from e
 
     def _destroy_test_db(self, test_database_name, verbosity):
         if test_database_name and not self.is_in_memory_db(test_database_name):

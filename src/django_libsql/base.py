@@ -1,12 +1,14 @@
 import logging
 from collections.abc import Mapping
 from itertools import chain, tee
-from django.utils.regex_helper import _lazy_re_compile
-import libsql_experimental as libsql_client
 
-from django.db.backends.sqlite3._functions import register as register_functions
-from django.db.backends.sqlite3.base import DatabaseWrapper as SQLite3DatabaseWrapper
+import libsql_experimental as libsql_client
+from django.db.backends.sqlite3._functions import \
+    register as register_functions
+from django.db.backends.sqlite3.base import \
+    DatabaseWrapper as SQLite3DatabaseWrapper
 from django.utils.asyncio import async_unsafe
+from django.utils.regex_helper import _lazy_re_compile
 
 from .creation import DatabaseCreation
 
