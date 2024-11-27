@@ -48,9 +48,6 @@ class CustomCursorWrapper:
         - If `param_names` is None, replace '%s' with '?' (for positional style).
         - If `param_names` is provided, convert to named style (e.g., ':param_name').
         """
-        import re
-        query = re.sub(r'\bREM\b', '--', query)  # Handle REM keyword conflicts
-
         if param_names is None:
             # Replace unescaped `%s` with `?` for positional parameter style.
             return SQL_PARAM_PLACEHOLDER_REGEX.sub("?", query).replace("%%", "%")
@@ -156,3 +153,22 @@ class DatabaseWrapper(SQLite3DatabaseWrapper):
         with self.cursor() as cursor:
             cursor.execute("PRAGMA foreign_keys = OFF")
         return True
+
+    def get_new_connection(self, conn_params):
+        """Connect to the database."""
+        conn = libsql_client.connect(**self.connection_params())
+        # Add a dummy close method to the connection
+        conn.close = lambda: None  # No-op since libsql connections don't require explicit closing
+        return conn
+
+    def _close(self):
+        """Override the close method to handle missing close on connection."""
+        try:
+            # Attempt to close the connection if it exists
+            if self.connection:
+                self.connection.close()
+        except AttributeError:
+            # Ignore since `close` isn't required
+            pass
+        finally:
+            self.connection = None
